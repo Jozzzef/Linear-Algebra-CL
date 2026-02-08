@@ -37,9 +37,14 @@ mod init_helpers {
     }
 }
 
+use init_helpers::{ChooseLoader, get_vulkan_library};
+
 fn main() {
-    let library: Arc<VulkanLibrary> =
-        init_helpers::get_vulkan_library(init_helpers::ChooseLoader::Default);
+    // let library: Arc<VulkanLibrary> = get_vulkan_library(ChooseLoader::PathOfLoader(String::from(
+    //     "/usr/lib64/libvulkan.so.1.4.313",
+    // )));
+
+    let library: Arc<VulkanLibrary> = get_vulkan_library(ChooseLoader::Default);
 
     // let instance = Instance::new(
     //     library,
