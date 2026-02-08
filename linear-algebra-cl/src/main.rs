@@ -2,7 +2,11 @@ use std::error::Error;
 use std::fmt;
 use std::path::Path;
 use std::sync::Arc;
-use vulkano::{VulkanLibrary, instance::Instance, library::DynamicLibraryLoader};
+use vulkano::{
+    VulkanLibrary,
+    instance::{Instance, InstanceCreateFlags, InstanceCreateInfo},
+    library::DynamicLibraryLoader,
+};
 
 mod init_helpers {
     use std::path::{Path, PathBuf};
@@ -40,20 +44,23 @@ mod init_helpers {
 use init_helpers::{ChooseLoader, get_vulkan_library};
 
 fn main() {
+    // ===================================
+    // STEP 1: GET VULKAN SHARED LIBRARY
+
     // let library: Arc<VulkanLibrary> = get_vulkan_library(ChooseLoader::PathOfLoader(String::from(
     //     "/usr/lib64/libvulkan.so.1.4.313",
     // )));
 
     let library: Arc<VulkanLibrary> = get_vulkan_library(ChooseLoader::Default);
-
-    // let instance = Instance::new(
-    //     library,
-    //     &InstanceCreateInfo {
-    //         flags: InstanceCreateFlags::ENUMERATE_PORTABILITY,
-    //         ..Default::default()
-    //     },
-    // )
-    // .unwrap();
     println!("{:?}", library);
-    println!("Hello, world!");
+
+    // ===================================
+    // STEP 2: INIT THE INSTANCE (MAPPING BETWEEN APP/VULKANO AND SHARED LIBRARY)
+
+    let instance_args = InstanceCreateInfo {
+        flags: InstanceCreateFlags::ENUMERATE_PORTABILITY,
+        ..Default::default() // Struct Update Syntax
+    };
+    let instance = Instance::new(library, instance_args).unwrap();
+    println!("{:?}", instance);
 }
