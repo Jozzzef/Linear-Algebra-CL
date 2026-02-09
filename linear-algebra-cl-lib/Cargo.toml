@@ -3,5 +3,9 @@ name = "linear-algebra-cl"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+proc-macro = true 
+
 [dependencies]
 vulkano = "0.35.2"
+proc-macros-lacl = {path = "../proc-macros-lacl"}
