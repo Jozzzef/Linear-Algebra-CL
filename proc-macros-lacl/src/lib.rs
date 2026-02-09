@@ -20,7 +20,7 @@ pub fn get_physical_device_and_queue_index(
 
 
         let output: TS2 = quote! {
-
+                
                 (PhysicalDevice, i8)
         };
         output.into()
