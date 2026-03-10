@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 use std::error::Error;
 use std::fmt;
 use std::path::Path;

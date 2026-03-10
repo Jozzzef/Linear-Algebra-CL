@@ -1,2 +1,3 @@
 [workspace]
+resolver = "3"
 members = ["linear-algebra-cl-lib", "proc-macros-lacl"]

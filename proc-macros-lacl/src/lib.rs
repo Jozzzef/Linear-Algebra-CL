@@ -16,13 +16,31 @@ pub fn get_physical_device_and_queue_index(
         input_tokens: TokenStream
 ) -> TokenStream {
         let it_ts2: TS2 = input_tokens.into();
+        // get the upper level groups, should only be two
+        let mut vec_groups: Vec<proc_macro2::Group> = vec![];
+        let mut vec_arguments: Vec<Vec<String>> = vec![vec![]];
         for t in it_ts2 {
-            match t { // those four variants are exhaustive
-                TT2::Group(group) => println!("Found Group: {:?}", group),
-                TT2::Ident(ident) => println!("Found Ident: {:?}", ident),
-                TT2::Punct(punct) => println!("Found Punct: {:?}", punct),
-                TT2::Literal(literal) => println!("Found Literal: {:?}", literal)
-            } 
+            if let TT2::Group(group) = t { vec_groups.push(group); }
+        };
+        if vec_groups.len() > 2 {
+            println!("this is not correct");
+        } else if vec_groups.is_empty() {
+            println!("opinionated defaults");
+        } else {
+            println!("VEC_GROUPS -> {:?}", vec_groups);
+            for (index, g) in vec_groups.iter().enumerate() {
+                for gs in g.stream() {
+                    if let TT2::Literal(literal) = gs { 
+                        if vec_arguments.len() < index + 1 {
+                            vec_arguments.push(vec![]);
+                        }
+                        vec_arguments[index].push(literal.to_string().replace("\"", ""));
+                        println!("{} {:?}", index, &vec_arguments[index]);
+                        println!("===================");
+                    }
+                } 
+            }
+            println!("VEC_ARGS -> {:?}", vec_arguments);
         }
 
         let output: TS2 = quote! {
