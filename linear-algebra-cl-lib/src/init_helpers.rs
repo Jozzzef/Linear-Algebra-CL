@@ -5,6 +5,7 @@ use vulkano::library::DynamicLibraryLoader;
 use vulkano::instance::Instance;
 use vulkano::device::physical::PhysicalDevice;
 use core::iter::ExactSizeIterator;
+use std::any::type_name;
 
 
 // Choice 1: Just get the default Vulkan Loader
@@ -37,10 +38,17 @@ pub fn query_devices_and_ext(inst: Arc<Instance>) {
     let dev_iter: Vec<Arc<PhysicalDevice>> = inst.enumerate_physical_devices().unwrap().collect();
     for pd in dev_iter {
         println!(
-            "{} | Extensions -> {:#?} | Compute Memory Size --> {}",
+            "{} | Extensions -> {:#?} | Features -< {:#?} | Compute Memory Size --> {}",
             pd.properties().device_name,
             pd.supported_extensions(),
+            pd.supported_features(),
             pd.properties().max_compute_shared_memory_size
         );
+        println!("supported extension types ->");
+        print_type(pd.supported_extensions());
     }
+}
+ 
+pub fn print_type<T>(_: T) {
+    println!("Type: {}", type_name::<T>());
 }
