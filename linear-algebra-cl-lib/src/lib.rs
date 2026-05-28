@@ -10,4 +10,3 @@ use vulkano::{
     library::DynamicLibraryLoader,
 };
 
-pub mod init_helpers;

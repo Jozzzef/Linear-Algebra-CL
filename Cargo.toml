@@ -1,3 +1,14 @@
 [workspace]
 resolver = "3"
-members = ["linear-algebra-cl-lib", "proc-macros-lacl"]
+members = [
+    "linear-algebra-cl-lib", 
+    "proc-macros-lacl",
+    "mutual-helpers"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+[workspace.dependencies]
+vulkano = "0.35.2"

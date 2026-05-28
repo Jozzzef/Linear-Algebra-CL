@@ -1,10 +1,10 @@
-use std::path::{Path, PathBuf};
+//use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use vulkano::VulkanLibrary;
 use vulkano::library::DynamicLibraryLoader;
 use vulkano::instance::Instance;
 use vulkano::device::physical::PhysicalDevice;
-use core::iter::ExactSizeIterator;
+//use core::iter::ExactSizeIterator;
 use std::any::type_name;
 
 
@@ -34,19 +34,24 @@ pub fn get_vulkan_library(choose_loader: ChooseLoader) -> Arc<VulkanLibrary> {
     }
 }
 
-pub fn query_devices_and_ext(inst: Arc<Instance>) {
+pub fn query_devices_and_ext(inst: Arc<Instance>) -> Vec<(Arc<PhysicalDevice>, Vec<String>)> {
     let dev_iter: Vec<Arc<PhysicalDevice>> = inst.enumerate_physical_devices().unwrap().collect();
+    let mut collect_vec: Vec<(Arc<PhysicalDevice>, Vec<String>)> = vec![];
     for pd in dev_iter {
+        let se: Vec<String> = pd.supported_extensions().into_iter().map(|s| String::from(s.0)).collect();
         println!(
             "{} | Extensions -> {:#?} | Features -< {:#?} | Compute Memory Size --> {}",
             pd.properties().device_name,
-            pd.supported_extensions(),
+            se ,
             pd.supported_features(),
             pd.properties().max_compute_shared_memory_size
         );
         println!("supported extension types ->");
         print_type(pd.supported_extensions());
+        collect_vec.push( (pd, se) ); 
     }
+
+    collect_vec
 }
  
 pub fn print_type<T>(_: T) {

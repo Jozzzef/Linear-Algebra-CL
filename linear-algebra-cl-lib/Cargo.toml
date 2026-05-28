@@ -1,8 +1,9 @@
 [package]
 name = "linear-algebra-cl"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-vulkano = "0.35.2"
+vulkano = {workspace = true}
 proc-macros-lacl = {path = "../proc-macros-lacl"}
+mutual-helpers = {path = "../mutual-helpers"}

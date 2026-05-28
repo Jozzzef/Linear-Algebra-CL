@@ -1,4 +1,4 @@
-use linear_algebra_cl::init_helpers::{ChooseLoader, get_vulkan_library, query_devices_and_ext};
+use mutual_helpers::{ChooseLoader, get_vulkan_library, query_devices_and_ext};
 use std::sync::Arc;
 use proc_macros_lacl::{get_physical_device_and_queue_index};
 use vulkano::{VulkanLibrary, query};
@@ -35,7 +35,7 @@ fn main() {
     // then actually select what you want
     let (physical_device, compute_queue_index) =
          get_physical_device_and_queue_index!(
-             ["khr_storage_buffer_storage_class"], ["nvidia", "intel", "amd"]
+             instance, ["khr_storage_buffer_storage_class"], ["nvidia", "intel", "amd"]
          );
     println!("physical_device -> {:?}, compute_queue_index -> {:?}", physical_device, compute_queue_index);
 }

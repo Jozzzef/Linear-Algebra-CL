@@ -1,0 +1,7 @@
+[package]
+name = "mutual-helpers"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+vulkano = {workspace = true}
