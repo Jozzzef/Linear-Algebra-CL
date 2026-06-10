@@ -22,6 +22,8 @@ pub fn get_physical_device_and_queue_index(
         let it_ts2: TS2 = input_tokens.into();
 
         // !! NEED TO POP OUT THE INSTANCE INTO ITS OWN VARIABLE
+        println!("entering get_physical_device_and_queue_index");
+        println!("{:?}", it_ts2);
 
         // get the upper level groups, should only be two
         let mut vec_groups: Vec<proc_macro2::Group> = vec![];
@@ -65,7 +67,7 @@ pub fn get_physical_device_and_queue_index(
                             //    return the vector with the greatest magnitude
         
             //collect physical devices + extensions available into a vec of tuples
-            let tpl_pd_ext = query_devices_and_ext();
+            //let tpl_pd_ext = query_devices_and_ext();
             
             
         }

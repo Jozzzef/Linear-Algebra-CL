@@ -4,8 +4,10 @@ use vulkano::VulkanLibrary;
 use vulkano::library::DynamicLibraryLoader;
 use vulkano::instance::Instance;
 use vulkano::device::physical::PhysicalDevice;
+use vulkano::device::Queue;
 //use core::iter::ExactSizeIterator;
 use std::any::type_name;
+pub mod dev_db;
 
 
 // Choice 1: Just get the default Vulkan Loader
@@ -56,4 +58,35 @@ pub fn query_devices_and_ext(inst: Arc<Instance>) -> Vec<(Arc<PhysicalDevice>, V
  
 pub fn print_type<T>(_: T) {
     println!("Type: {}", type_name::<T>());
+}
+
+// v1: a vector of PhysicalDevice Type, ordered from left to right in important to choose (i.e. the first element is plan-a, second is plan-b, etc)
+// v2: a vector of extensions you want to your device to have, case-insensitive elements (i.e. if a physical device has such an extension, then keep it)
+
+pub fn get_physical_device_and_queue_index(
+    instance: Instance, 
+    v1: Option<Vec<&str>>, 
+    v2: Option<Vec<&str>>
+) -> (PhysicalDevice, Queue) {
+    
+    let p: PhysicalDevice = match v1 {
+        // user-chosen device, either exact or fuzzy-found string
+        Some(s) => {
+            println!("Some(s) Inside match statement for v1 {:?}", s);
+        },
+        None => {
+            println!("None Inside match statement for v1 {:?}", s);
+        }
+    }
+
+    let e: Queue = match v2 {
+        // user-chosen device, either exact or fuzzy-found string
+        Some(s) => {
+            println!("Some(s) Inside match statement for v1 {:?}", s);
+        },
+        None => {
+            println!("None Inside match statement for v1 {:?}", s);
+        }
+    }
+    
 }

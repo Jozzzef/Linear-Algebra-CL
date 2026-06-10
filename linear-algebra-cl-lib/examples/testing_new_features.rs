@@ -35,7 +35,7 @@ fn main() {
     // then actually select what you want
     let (physical_device, compute_queue_index) =
          get_physical_device_and_queue_index!(
-             instance, ["khr_storage_buffer_storage_class"], ["nvidia", "intel", "amd"]
+             instance.clone(), ["khr_storage_buffer_storage_class"], ["nvidia", "intel", "amd"]
          );
     println!("physical_device -> {:?}, compute_queue_index -> {:?}", physical_device, compute_queue_index);
 }
