@@ -33,9 +33,9 @@ fn main() {
     // first see what is available
     query_devices_and_ext(instance.clone());
     // then actually select what you want
-    let (physical_device, compute_queue_index) =
-         get_physical_device_and_queue_index!(
-             instance.clone(), ["khr_storage_buffer_storage_class"], ["nvidia", "intel", "amd"]
-         );
-    println!("physical_device -> {:?}, compute_queue_index -> {:?}", physical_device, compute_queue_index);
+//    let (physical_device, compute_queue_index) =
+//         get_physical_device_and_queue_index!(
+//             instance.clone(), ["khr_storage_buffer_storage_class"], ["nvidia", "intel", "amd"]
+//         );
+//    println!("physical_device -> {:?}, compute_queue_index -> {:?}", physical_device, compute_queue_index);
 }
