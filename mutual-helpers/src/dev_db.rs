@@ -1,4 +1,8 @@
 use arrow::datatypes::{DataType, Field, Schema};
+use arrow::record_batch::RecordBatch;
+use arrow::array::{StringArray, BooleanArray, ArrayRef};
+use arrow::ipc::writer::ArrowWriter;
+use std::fs::File;
 use std::sync::Arc;
 use vulkano::instance::Instance;
 use vulkano::device::physical::PhysicalDevice;
@@ -48,6 +52,23 @@ enum StringOrBool {
     B(bool)
 }
 
+impl StringOrBool {
+    pub fn as_string(&self) -> String {
+        match self {
+            StringOrBool::S(s) => s.clone(),
+            StringOrBool::B(b) => b.to_string(),
+        }
+    }
+
+    pub fn as_bool(&self) -> bool {
+        match self {
+            StringOrBool::S(_) => false,
+            StringOrBool::B(b) => *b,
+        }
+    }
+
+}
+
 // spawn a worker thread to do this, since we need this list only last after building the users
 // computation statements
 // save it as parquet for easy retrieval
@@ -79,11 +100,38 @@ pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
         println!("+++");
         println!("{:?}", vec_of_columns);
 
+        let batch = matrix_to_record_batch(&vec_of_columns, &schema);
+        println!("RECORDBATCH -> ");
+        println!("{:?}", batch);
+
         
     }
 
     
 
+}
+
+fn matrix_to_record_batch(m: &Vec<Vec<StringOrBool>>, schema: &Schema) -> RecordBatch {
+   
+    let mut vec_of_arrays: Vec<ArrayRef> = vec![];
+    for c in m {
+        match c[0] {
+            StringOrBool::S(_) => {
+                let vec_string: Vec<String> = c.iter().map(|s| s.as_string()).collect();
+                vec_of_arrays.push(Arc::new(StringArray::from(vec_string)))
+            }
+            StringOrBool::B(_) => {
+                let vec_bool: Vec<String> = c.iter().map(|s| s.as_string()).collect();
+                vec_of_arrays.push(Arc::new(StringArray::from(vec_bool)))
+            }
+        }
+    }
+
+    arrow::record_batch::RecordBatch::try_new(
+        Arc::new(schema.clone()),
+        vec_of_arrays,
+    ).unwrap()
+    
 }
 
 // If the user wants to explicitely use a device it should be used whatever the final command in
