@@ -1,6 +1,6 @@
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;
-use arrow::array::{StringArray, BooleanArray, ArrayRef};
+use arrow::array::{StringArray, BooleanArray, UInt32Array, ArrayRef};
 use parquet::arrow::ArrowWriter;
 use std::fs::File;
 use std::sync::Arc;
@@ -20,48 +20,61 @@ const GLOBAL_NEEDED_EXTENSIONS: [&str; 4] = [
 
 /// This is to actually get the list of physical devices
 /// Since we will interface with a database, there is no need for this to be public
-fn query_physical_devices(inst: Arc<Instance>) -> Vec<(Arc<PhysicalDevice>, String, Vec<String>)> {
+fn query_physical_devices(inst: Arc<Instance>) -> Vec<(Arc<PhysicalDevice>, String, u32, Vec<String>)> {
     let dev_iter: Vec<Arc<PhysicalDevice>> = inst.enumerate_physical_devices().unwrap().collect();
-    let mut collect_vec: Vec<(Arc<PhysicalDevice>, String, Vec<String>)> = vec![];
+    let mut collect_vec: Vec<(Arc<PhysicalDevice>, String, u32, Vec<String>)> = vec![];
     for pd in dev_iter {
         let se: Vec<String> = pd.supported_extensions().into_iter().map(|s| String::from(s.0)).collect();
         let dn: String = pd.properties().device_name.clone();
-        collect_vec.push( (pd, dn, se) ); 
+        let di: u32 = pd.properties().device_id;
+        collect_vec.push( (pd, dn, di, se) ); 
     }
     collect_vec
 }
 
 /// This is to actually get the list of physical devices properties, not the physical device type
 /// Since we will interface with a database, there is no need for this to be public
-fn query_physical_device_props(inst: Arc<Instance>) -> Vec<(String, Vec<String>)> {
+fn query_physical_device_props(inst: Arc<Instance>) -> Vec<(String, u32, Vec<String>)> {
     let dev_iter: Vec<Arc<PhysicalDevice>> = inst.enumerate_physical_devices().unwrap().collect();
-    let mut collect_vec: Vec<(String, Vec<String>)> = vec![];
+    let mut collect_vec: Vec<(String, u32, Vec<String>)> = vec![];
     for pd in dev_iter {
         let se: Vec<String> = pd.supported_extensions().into_iter().map(|s| String::from(s.0)).collect();
         let dn: String = pd.properties().device_name.clone();
-        collect_vec.push( (dn, se) ); 
+        let di: u32 = pd.properties().device_id;
+        collect_vec.push( (dn, di, se) ); 
     }
     collect_vec
 }
 
 #[derive(Clone, Debug)]
-enum StringOrBool {
+enum MixedArray {
     S(String),
-    B(bool)
+    B(bool),
+    U(u32)
 }
 
-impl StringOrBool {
+impl MixedArray {
     pub fn as_string(&self) -> String {
         match self {
-            StringOrBool::S(s) => s.clone(),
-            StringOrBool::B(b) => b.to_string(),
+            MixedArray::S(s) => s.clone(),
+            MixedArray::B(b) => b.to_string(),
+            MixedArray::U(u) => u.to_string()
         }
     }
 
     pub fn as_bool(&self) -> bool {
         match self {
-            StringOrBool::S(_) => false,
-            StringOrBool::B(b) => *b,
+            MixedArray::S(_) => false,
+            MixedArray::B(b) => *b,
+            MixedArray::U(_) => false 
+        }
+    }
+
+    pub fn as_u32(&self) -> u32 {
+        match self {
+            MixedArray::S(_) => 0,
+            MixedArray::B(_) => 0,
+            MixedArray::U(u) => *u 
         }
     }
 
@@ -75,24 +88,28 @@ pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
     // IF FILE NOT EXISTS
     let ext_vec = GLOBAL_NEEDED_EXTENSIONS.to_vec();
     let mut fields: Vec<Field> = ext_vec.iter().map(|x| Field::new(*x, DataType::Boolean, false)).collect();
+    fields.insert(0, Field::new("device_id", DataType::UInt32, false));
     fields.insert(0, Field::new("device_name", DataType::Utf8, false));
     let schema = Schema::new(fields.clone());
     println!("{:?}", schema);
 
     // REFRESH
     let vec_of_dev_and_ext = query_physical_device_props(inst);
-    let mut vec_of_columns: Vec<Vec<StringOrBool>> = vec![Vec::new(); fields.len()];
+    let mut vec_of_columns: Vec<Vec<MixedArray>> = vec![Vec::new(); fields.len()];
     for x in vec_of_dev_and_ext {
         println!("------------");
         println!("{:?}", x);
 
         for (i, f) in fields.iter().enumerate() {
             if i == 0 {
-                vec_of_columns[0].push(StringOrBool::S(x.0.clone()))
-            } else if x.1.iter().any(|e| e.to_lowercase() == f.name().to_lowercase()) { 
-                vec_of_columns[i].push(StringOrBool::B(true))
+                vec_of_columns[0].push(MixedArray::S(x.0.clone()))
+            }
+            else if i == 1 {
+                vec_of_columns[i].push(MixedArray::U(x.1))
+            } else if x.2.iter().any(|e| e.to_lowercase() == f.name().to_lowercase()) { 
+                vec_of_columns[i].push(MixedArray::B(true))
             } else {
-                vec_of_columns[i].push(StringOrBool::B(false))
+                vec_of_columns[i].push(MixedArray::B(false))
             }
         }
         println!("+++");
@@ -112,18 +129,22 @@ pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
 
 }
 
-fn matrix_to_record_batch(m: &Vec<Vec<StringOrBool>>, schema: &Schema) -> RecordBatch {
+fn matrix_to_record_batch(m: &Vec<Vec<MixedArray>>, schema: &Schema) -> RecordBatch {
    
     let mut vec_of_arrays: Vec<ArrayRef> = vec![];
     for c in m {
         match c[0] {
-            StringOrBool::S(_) => {
+            MixedArray::S(_) => {
                 let vec_string: Vec<String> = c.iter().map(|s| s.as_string()).collect();
                 vec_of_arrays.push(Arc::new(StringArray::from(vec_string)))
             }
-            StringOrBool::B(_) => {
+            MixedArray::B(_) => {
                 let vec_bool: Vec<bool> = c.iter().map(|s| s.as_bool()).collect();
                 vec_of_arrays.push(Arc::new(BooleanArray::from(vec_bool)))
+            }
+            MixedArray::U(_) => {
+                let vec_u32: Vec<u32> = c.iter().map(|s| s.as_u32()).collect();
+                vec_of_arrays.push(Arc::new(UInt32Array::from(vec_u32)))
             }
         }
     }
