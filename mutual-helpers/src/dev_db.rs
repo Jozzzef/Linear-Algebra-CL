@@ -1,8 +1,8 @@
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;
 use arrow::array::{StringArray, BooleanArray, ArrayRef};
-use arrow::ipc::writer::ArrowWriter;
-use std::fs::File;
+//use arrow::ipc::writer::ArrowWriter;
+//use std::fs::File;
 use std::sync::Arc;
 use vulkano::instance::Instance;
 use vulkano::device::physical::PhysicalDevice;
@@ -11,13 +11,11 @@ use vulkano::device::physical::PhysicalDevice;
 /// I.e. if something in this crate relies on this extension, then add it here.
 /// This is done to keep the amount of extensions to a minimum
 /// These also act as columns in our physical device lookup
-const GLOBAL_NEEDED_EXTENSIONS: [&str; 6] = [
+const GLOBAL_NEEDED_EXTENSIONS: [&str; 4] = [
     "VK_KHR_shader_subgroup", // subgroup operations
     "VK_KHR_push_descriptor", // push descriptors
     "VK_KHR_compute_shader_derivatives", // if you need derivatives in compute shaders
-    "VK_KHR_shader_float_controls", // precise control over floating-point semantics
-    "VK_EXT_sampler_filter_minmax", // custom filtering in image loads
-    "VK_KHR_shader_atomic_int64", // 64-bit atomic operations
+    "VK_KHR_shader_float_controls", // precise control over floating-point semantics "VK_EXT_sampler_filter_minmax", // custom filtering in image loads "VK_KHR_shader_atomic_int64", // 64-bit atomic operations
 ];
 
 /// This is to actually get the list of physical devices
@@ -121,17 +119,31 @@ fn matrix_to_record_batch(m: &Vec<Vec<StringOrBool>>, schema: &Schema) -> Record
                 vec_of_arrays.push(Arc::new(StringArray::from(vec_string)))
             }
             StringOrBool::B(_) => {
-                let vec_bool: Vec<String> = c.iter().map(|s| s.as_string()).collect();
-                vec_of_arrays.push(Arc::new(StringArray::from(vec_bool)))
+                let vec_bool: Vec<bool> = c.iter().map(|s| s.as_bool()).collect();
+                vec_of_arrays.push(Arc::new(BooleanArray::from(vec_bool)))
             }
         }
     }
 
-    arrow::record_batch::RecordBatch::try_new(
+    let output = arrow::record_batch::RecordBatch::try_new(
         Arc::new(schema.clone()),
         vec_of_arrays,
-    ).unwrap()
-    
+    ); 
+
+    match output {
+        Ok(o) => {
+            println!("RecordBatch Ok => {:?}", o);
+            o
+        }
+        Err(e) => {
+            println!("ERROR in RecordBatch => {:?}", e);
+            let vec_of_arrays: Vec<ArrayRef> = vec![Arc::new(StringArray::from(vec!["ERROR"]))];
+            arrow::record_batch::RecordBatch::try_new(
+                Arc::new( Schema::new(vec![Field::new("error_placeholder", DataType::Utf8, false)]) ),
+                vec_of_arrays,
+            ).unwrap()
+        }
+    }
 }
 
 // If the user wants to explicitely use a device it should be used whatever the final command in
