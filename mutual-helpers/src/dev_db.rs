@@ -1,8 +1,8 @@
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;
 use arrow::array::{StringArray, BooleanArray, ArrayRef};
-//use arrow::ipc::writer::ArrowWriter;
-//use std::fs::File;
+use parquet::arrow::ArrowWriter;
+use std::fs::File;
 use std::sync::Arc;
 use vulkano::instance::Instance;
 use vulkano::device::physical::PhysicalDevice;
@@ -99,9 +99,12 @@ pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
         println!("{:?}", vec_of_columns);
 
         let batch = matrix_to_record_batch(&vec_of_columns, &schema);
-        println!("RECORDBATCH -> ");
-        println!("{:?}", batch);
-
+    
+        //write to file
+        let file = File::create("data.parquet").unwrap();
+        let mut writer = ArrowWriter::try_new(file, Arc::new(schema.clone()), None).unwrap();
+        writer.write(&batch).unwrap();
+        writer.close().unwrap();
         
     }
 
