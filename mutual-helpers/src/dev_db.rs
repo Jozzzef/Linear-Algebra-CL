@@ -20,6 +20,7 @@ const GLOBAL_NEEDED_EXTENSIONS: [&str; 4] = [
 
 /// This is to actually get the list of physical devices
 /// Since we will interface with a database, there is no need for this to be public
+/// Its not yet know if the extra easy-accesible mestadata is needed just yet
 fn query_physical_devices(inst: Arc<Instance>) -> Vec<(Arc<PhysicalDevice>, String, u32, Vec<String>)> {
     let dev_iter: Vec<Arc<PhysicalDevice>> = inst.enumerate_physical_devices().unwrap().collect();
     let mut collect_vec: Vec<(Arc<PhysicalDevice>, String, u32, Vec<String>)> = vec![];
@@ -32,7 +33,7 @@ fn query_physical_devices(inst: Arc<Instance>) -> Vec<(Arc<PhysicalDevice>, Stri
     collect_vec
 }
 
-/// This is to actually get the list of physical devices properties, not the physical device type
+/// This is to actually get the list of physical devices properties, but not the physical device type
 /// Since we will interface with a database, there is no need for this to be public
 fn query_physical_device_props(inst: Arc<Instance>) -> Vec<(String, u32, Vec<String>)> {
     let dev_iter: Vec<Arc<PhysicalDevice>> = inst.enumerate_physical_devices().unwrap().collect();
@@ -46,14 +47,13 @@ fn query_physical_device_props(inst: Arc<Instance>) -> Vec<(String, u32, Vec<Str
     collect_vec
 }
 
-// used to carry mutliple types in vecs
+/// used to carry mutliple types in vecs; for our device database
 #[derive(Clone, Debug)]
 enum MixedArray {
     S(String),
     B(bool),
     U(u32)
 }
-
 impl MixedArray {
     pub fn as_string(&self) -> String {
         match self {
@@ -62,7 +62,6 @@ impl MixedArray {
             MixedArray::U(u) => u.to_string()
         }
     }
-
     pub fn as_bool(&self) -> bool {
         match self {
             MixedArray::S(_) => false,
@@ -70,7 +69,6 @@ impl MixedArray {
             MixedArray::U(_) => false 
         }
     }
-
     pub fn as_u32(&self) -> u32 {
         match self {
             MixedArray::S(_) => 0,
@@ -78,7 +76,6 @@ impl MixedArray {
             MixedArray::U(u) => *u 
         }
     }
-
 }
 
 // spawn a worker thread to do this, since we need this list only last after building the users
@@ -93,7 +90,7 @@ pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
     fields.insert(0, Field::new("device_name", DataType::Utf8, false));
     let schema = Schema::new(fields.clone());
 
-    // Query devices and populate them in our database
+    // Query devices and populate them in a staging matrix
     let vec_of_dev_and_ext = query_physical_device_props(inst);
     let mut vec_of_columns: Vec<Vec<MixedArray>> = vec![Vec::new(); fields.len()];
     for x in vec_of_dev_and_ext {
@@ -113,7 +110,7 @@ pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
         println!("{:?}", vec_of_columns);
     }
 
-    //write to file
+    //write to parquet file
     let batch = matrix_to_record_batch(&vec_of_columns, &schema);
     let file = File::create("data.parquet").unwrap();
     let mut writer = ArrowWriter::try_new(file, Arc::new(schema.clone()), None).unwrap();
