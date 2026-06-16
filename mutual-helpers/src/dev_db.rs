@@ -85,21 +85,17 @@ impl MixedArray {
 // save it as parquet for easy retrieval
 pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
 
-    // IF FILE NOT EXISTS
+    // Create structure
     let ext_vec = GLOBAL_NEEDED_EXTENSIONS.to_vec();
     let mut fields: Vec<Field> = ext_vec.iter().map(|x| Field::new(*x, DataType::Boolean, false)).collect();
     fields.insert(0, Field::new("device_id", DataType::UInt32, false));
     fields.insert(0, Field::new("device_name", DataType::Utf8, false));
     let schema = Schema::new(fields.clone());
-    println!("{:?}", schema);
 
-    // REFRESH
+    // Query devices and populate them in our database
     let vec_of_dev_and_ext = query_physical_device_props(inst);
     let mut vec_of_columns: Vec<Vec<MixedArray>> = vec![Vec::new(); fields.len()];
     for x in vec_of_dev_and_ext {
-        println!("------------");
-        println!("{:?}", x);
-
         for (i, f) in fields.iter().enumerate() {
             if i == 0 {
                 vec_of_columns[0].push(MixedArray::S(x.0.clone()))
@@ -114,19 +110,14 @@ pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
         }
         println!("+++");
         println!("{:?}", vec_of_columns);
-
-        let batch = matrix_to_record_batch(&vec_of_columns, &schema);
-    
-        //write to file
-        let file = File::create("data.parquet").unwrap();
-        let mut writer = ArrowWriter::try_new(file, Arc::new(schema.clone()), None).unwrap();
-        writer.write(&batch).unwrap();
-        writer.close().unwrap();
-        
     }
 
-    
-
+    //write to file
+    let batch = matrix_to_record_batch(&vec_of_columns, &schema);
+    let file = File::create("data.parquet").unwrap();
+    let mut writer = ArrowWriter::try_new(file, Arc::new(schema.clone()), None).unwrap();
+    writer.write(&batch).unwrap();
+    writer.close().unwrap();
 }
 
 fn matrix_to_record_batch(m: &Vec<Vec<MixedArray>>, schema: &Schema) -> RecordBatch {
