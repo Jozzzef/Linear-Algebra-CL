@@ -7,7 +7,7 @@ use vulkano::device::physical::PhysicalDevice;
 use vulkano::device::Queue;
 //use core::iter::ExactSizeIterator;
 use std::any::type_name;
-pub mod dev_db;
+pub mod device_db;
 
 
 // Choice 1: Just get the default Vulkan Loader

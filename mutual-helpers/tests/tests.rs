@@ -1,6 +1,6 @@
 //#[cfg(test)]
 mod tests {
-    use mutual_helpers::{ChooseLoader, get_vulkan_library, dev_db};
+    use mutual_helpers::{ChooseLoader, get_vulkan_library, device_db};
     use std::sync::Arc;
     use vulkano::{VulkanLibrary};
     use vulkano::instance::{InstanceCreateInfo, InstanceCreateFlags, Instance};
@@ -14,7 +14,7 @@ mod tests {
             ..Default::default() // Struct Update Syntax
         };
         let instance: Arc<Instance> = Instance::new(library, instance_args).unwrap();
-        dev_db::create_or_refresh_physical_device_database(instance.clone());
+        device_db::create_or_refresh_physical_device_database(instance.clone());
     //     assert_eq!(mutual_helpers::create_or_refresh_physical_device_database(), "");
     }
 

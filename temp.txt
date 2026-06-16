@@ -13,45 +13,37 @@ running 2 tests
 This is my debugging message
 test tests::just_printing ... ok
 +++
-[[S("NVIDIA GeForce RTX 3080")], [U(8726)], [B(false)], [B(true)], [B(false)], [B(true)]]
+[[S("Intel(R) UHD Graphics 620 (KBL GT2)")], [U(22807)], [B(false)], [B(true)], [B(false)], [B(true)]]
 +++
-[[S("NVIDIA GeForce RTX 3080"), S("AMD Ryzen 7 7700X 8-Core Processor (RADV RAPHAEL_MENDOCINO)")], [U(8726), U(5710)], [B(false), B(false)], [B(true), B(true)], [B(false), B(false)], [B(true), B(true)]]
-+++
-[[S("NVIDIA GeForce RTX 3080"), S("AMD Ryzen 7 7700X 8-Core Processor (RADV RAPHAEL_MENDOCINO)"), S("llvmpipe (LLVM 20.1.8, 256 bits)")], [U(8726), U(5710), U(0)], [B(false), B(false), B(false)], [B(true), B(true), B(true)], [B(false), B(false), B(false)], [B(true), B(true), B(true)]]
+[[S("Intel(R) UHD Graphics 620 (KBL GT2)"), S("llvmpipe (LLVM 20.1.8, 256 bits)")], [U(22807), U(0)], [B(false), B(false)], [B(true), B(true)], [B(false), B(false)], [B(true), B(true)]]
 RecordBatch Ok => RecordBatch { schema: Schema { fields: [Field { name: "device_name", data_type: Utf8 }, Field { name: "device_id", data_type: UInt32 }, Field { name: "VK_KHR_shader_subgroup", data_type: Boolean }, Field { name: "VK_KHR_push_descriptor", data_type: Boolean }, Field { name: "VK_KHR_compute_shader_derivatives", data_type: Boolean }, Field { name: "VK_KHR_shader_float_controls", data_type: Boolean }], metadata: {} }, columns: [StringArray
 [
-  "NVIDIA GeForce RTX 3080",
-  "AMD Ryzen 7 7700X 8-Core Processor (RADV RAPHAEL_MENDOCINO)",
+  "Intel(R) UHD Graphics 620 (KBL GT2)",
   "llvmpipe (LLVM 20.1.8, 256 bits)",
 ], PrimitiveArray<UInt32>
 [
-  8726,
-  5710,
+  22807,
   0,
 ], BooleanArray
 [
   false,
   false,
+], BooleanArray
+[
+  true,
+  true,
+], BooleanArray
+[
+  false,
   false,
 ], BooleanArray
 [
   true,
   true,
-  true,
-], BooleanArray
-[
-  false,
-  false,
-  false,
-], BooleanArray
-[
-  true,
-  true,
-  true,
-]], row_count: 3 }
+]], row_count: 2 }
 test tests::my_test ... ok
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
 
 
 running 0 tests
