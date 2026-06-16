@@ -46,6 +46,7 @@ fn query_physical_device_props(inst: Arc<Instance>) -> Vec<(String, u32, Vec<Str
     collect_vec
 }
 
+// used to carry mutliple types in vecs
 #[derive(Clone, Debug)]
 enum MixedArray {
     S(String),
@@ -120,6 +121,7 @@ pub fn create_or_refresh_physical_device_database(inst: Arc<Instance>) {
     writer.close().unwrap();
 }
 
+// helper function to create_or_refresh_physical_device_database
 fn matrix_to_record_batch(m: &Vec<Vec<MixedArray>>, schema: &Schema) -> RecordBatch {
    
     let mut vec_of_arrays: Vec<ArrayRef> = vec![];
@@ -161,10 +163,14 @@ fn matrix_to_record_batch(m: &Vec<Vec<MixedArray>>, schema: &Schema) -> RecordBa
     }
 }
 
-// If the user wants to explicitely use a device it should be used whatever the final command in
-// the sequence of statements is to actually deploy the computation, i.e. pass in the name of the device as a parameter
-pub fn retrieve_necessary_device_or_user_specified_device(minimal_ext_needed: Vec<String>) {
+// there needs to be another method in another area of the codebase that takes the 
+// algorithm specified and gives us back what extensions are needed,
+// but maybe there is an accumulation technique I can use to retrieve all the extensions
+// along each declarative step
+pub fn retrieve_necessary_device(minimal_ext_needed: Vec<String>) {
 }
 
-
+// need to extend to multiple devices further down the line
+pub fn retrieve_user_specified_device(device_name: Option<String>, device_id: Option<String>) {
+}
 
