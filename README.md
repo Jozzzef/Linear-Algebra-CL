@@ -15,7 +15,7 @@ General compute on GPUs using a linear algebra API + Accelerated Linear Algebra 
 - [ ] Algebraic Types Defined
     - [ ] Element-types: Monoids, Groups, Rings, Fields
         - [ ] Can enable SIMD on just element types as well
-    - [ ] Combination-types: Modulelites (Modules over monoids/groups), Modules (over any element type)
+    - [ ] Combination-types: Modulelites (Modules over monoids/groups), Modules
         - [ ] Vector spaces (derived from modules) will be extended to:
             - [ ] Matrix spaces
             - [ ] Polynomial spaces
